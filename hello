@@ -1,0 +1,48 @@
+use warnings;
+use strict;
+
+use GD;
+use Excel::Writer::XLSX;
+use Spreadsheet::ParseExcel;
+
+my $image = GD::Image->newFromPng('/home/madhur/Documents/clear.png') or die;
+my $book = Excel::Writer::XLSX->new( 'perl5.xlsx' );    # Step 1
+my $sheet = $book->add_worksheet();
+sub array {
+    my ($x, $y) = @_;
+    map {[ (0) x $x ]} 1 .. $y
+}
+sub i;
+sub j;
+
+my @square = array 512, 512;
+for (my $j=0; $j<512; $j++) {
+	for(my $i=0; $i<512; $i++){
+		my $index = $image->getPixel($i, $j);
+		my ($r,$g,$b) = $image->rgb($index);
+		if (($r==252) && ($g==254) && ($b==252)){
+			$square[$i][$j] = 1;
+		}
+		else{
+			$square[$i][$j] = 0;
+		}
+	}	
+}
+for (my $j=0; $j<511; $j++) {
+	for(my $i=0; $i<511; $i++){
+		if(($square[$i][$j]==1) && ($square[$i-1][$j]==0 || $square[$i+1][$j]==0 || $square[$i][$j-1]==0 || $square[$i][$j+1]==0)){
+			$square[$i][$j] = 1;
+		}
+		else{
+			$square[$i][$j] = 0;	
+		}
+	}	
+}
+for (my $j=0; $j<512; $j++) {
+	for(my $i=0; $i<512; $i++){
+		if($square[$i][$j]==1){
+			$sheet ->write($i, $j, 1);
+		}
+	}	
+}
+
